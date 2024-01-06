@@ -1,5 +1,6 @@
-console.log("Hi, Emily");
+console.log("Hi, Tim");
 
+let knitted;
 const baseId = "appJI1Go4n9X5dv1B";
 const tableName = "Products";
 const apiKey =
@@ -33,32 +34,101 @@ fetch(apiUrl, fetchOptions)
   })
   .then((data) => {
     // Handle each data item and append to Webflow div
-    data.records.forEach((record) => {
-      // Assuming 'fields' is the key for the data in each record
-      const fields = record.fields;
-      // clone the item template that was selected earlier
-      const item = componentItem.cloneNode(true);
-
-      //select all components to change
-      let image = item.querySelector("[data-element = 'image']");
-      let title = item.querySelector("[data-element = 'name']");
-      let price = item.querySelector("[data-element = 'price']");
-      let productNumber = item.querySelector("[data-element = 'number']");
-      let description = item.querySelector("[data-element = 'paragraph']");
-
-      //change them
-
-      image.src = fields.Image;
-      title.innerHTML = fields.Item;
-      price.innerHTML = `$${fields.Price}`;
-      productNumber.innerHTML = fields.ItemNumber;
-      description.innerHTML = fields.Description;
-
-      //add the template to the component wrapper
-      componentWrap.appendChild(item);
-    });
+    renderList(data);
+    knitted = data;
   })
   .catch((error) => {
     // Handle any errors that occurred during the Fetch request
     console.error("Error fetching data from Airtable:", error);
   });
+
+//filtering functions
+
+//select components
+const filterButton = document.querySelector("#search");
+const searchInput = document.querySelector("#searchInput");
+const radioBag = document.querySelector("#Bag");
+const allRadios = document.querySelectorAll('[radio="btn"]');
+
+console.log(allRadios);
+
+allRadios.forEach((radio) => {
+  radio.addEventListener("change", radioFilter);
+});
+//functions
+filterButton.addEventListener("click", () => renderList(knitted));
+radioBag.addEventListener("change", radioFilter);
+
+//radioFilter
+function radioFilter(e) {
+  const category = e.target.value;
+  if (category === "All") return renderList(knitted);
+  const filteredList = [];
+  console.log(knitted.records);
+  let arr = knitted.records;
+  arr.forEach((item) => {
+    let tagArr = item.fields.Tags;
+    if (tagArr.includes(category)) filteredList.push(item);
+    // if (items.fields.Tags.includes("Bag")) console.log("HIT");
+  });
+  updateList(filteredList);
+}
+
+//render list function
+function renderList(data) {
+  componentWrap.innerHTML = "";
+  data.records.forEach((record) => {
+    // Assuming 'fields' is the key for the data in each record
+    const fields = record.fields;
+
+    // clone the item template that was selected earlier
+    const item = componentItem.cloneNode(true);
+
+    //select all components to change
+    let image = item.querySelector("[data-element = 'image']");
+    let title = item.querySelector("[data-element = 'name']");
+    let price = item.querySelector("[data-element = 'price']");
+    let productNumber = item.querySelector("[data-element = 'number']");
+    let description = item.querySelector("[data-element = 'paragraph']");
+
+    //change them
+
+    image.src = fields.Image;
+    title.innerHTML = fields.Item;
+    price.innerHTML = `$${fields.Price}`;
+    productNumber.innerHTML = fields.ItemNumber;
+    description.innerHTML = fields.Description;
+
+    //add the template to the component wrapper
+    componentWrap.appendChild(item);
+  });
+}
+
+function updateList(data) {
+  componentWrap.innerHTML = "";
+  data.forEach((record) => {
+    // Assuming 'fields' is the key for the data in each record
+    const fields = record.fields;
+
+    // clone the item template that was selected earlier
+    const item = componentItem.cloneNode(true);
+
+    //select all components to change
+    let image = item.querySelector("[data-element = 'image']");
+    let title = item.querySelector("[data-element = 'name']");
+    let price = item.querySelector("[data-element = 'price']");
+    let productNumber = item.querySelector("[data-element = 'number']");
+    let description = item.querySelector("[data-element = 'paragraph']");
+
+    //change them
+
+    image.src = fields.Image;
+    title.innerHTML = fields.Item;
+    price.innerHTML = `$${fields.Price}`;
+    productNumber.innerHTML = fields.ItemNumber;
+    description.innerHTML = fields.Description;
+
+    //add the template to the component wrapper
+    componentWrap.appendChild(item);
+  });
+}
